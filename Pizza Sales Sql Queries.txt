@@ -1,0 +1,92 @@
+show databases;
+use bdpizza;
+show tables;
+select * from pizza_sales;
+select SUM(total_price) as total_revenue from pizza_sales;
+select sum(total_price)/ count(distinct order_id) as Avg_order_value from pizza_sales;
+select sum(quantity) as Total_pizza_sold from pizza_sales;
+select sum(quantity)/ count(distinct order_id) from pizza_sales;
+--Daily trend
+SELECT DAYNAME(DW, order_date) AS order_day, COUNT(DISTINCT order_id) AS total_orders
+FROM pizza_sales
+GROUP BY DAYNAME(DW, order_date);
+
+SELECT COALESCE(DAYNAME(order_date), 'Invalid Date') AS order_day, COUNT(DISTINCT order_id) AS total_orders
+FROM pizza_sales
+WHERE order_date IS NOT NULL AND order_date <> '0000-00-00'
+GROUP BY order_day;
+
+SELECT order_date, COALESCE(DAYNAME(order_date), 'Invalid Date') AS order_day, COUNT(DISTINCT order_id) AS total_orders
+FROM pizza_sales
+WHERE order_date IS NOT NULL AND order_date <> '0000-00-00'
+GROUP BY order_date, order_day;
+
+SELECT STR_TO_DATE(order_date, '%d-%m-%Y') AS formatted_date, DAYNAME(STR_TO_DATE(order_date, '%d-%m-%Y')) AS order_day, COUNT(DISTINCT order_id) AS total_orders
+FROM pizza_sales
+WHERE order_date IS NOT NULL AND order_date <> '0000-00-00'
+GROUP BY formatted_date, order_day;
+
+SELECT DAYNAME(STR_TO_DATE(order_date, '%d-%m-%Y')) AS order_day, COUNT(*) AS total_orders
+FROM pizza_sales
+WHERE order_date IS NOT NULL AND order_date <> '0000-00-00'
+GROUP BY order_day;
+
+--Hourly Trend
+Select datepart(Hour, order_date) as order_hours, COUNT(*) AS total_orders
+FROM pizza_sales
+Groupby datepart(Hour, order_date);
+
+SELECT EXTRACT(HOUR FROM order_date) AS order_hours, COUNT(*) AS total_orders
+FROM pizza_sales
+GROUP BY EXTRACT(HOUR FROM order_date);
+Order BY EXTRACT(HOUR FROM order_date);
+
+SELECT DATE_FORMAT(order_date, '%H:00') AS order_hour, COUNT(*) AS total_orders
+FROM pizza_sales
+GROUP BY DATE_FORMAT(order_date, '%H:00')
+ORDER BY DATE_FORMAT(order_date, '%H:00');
+
+
+SELECT pizza_category,SUM(total_price) * 100 / (SELECT SUM(total_price) FROM pizza_sales WHERE MONTH(order_date) = 01
+) AS pct
+FROM pizza_sales
+WHERE MONTH(order_date) = 01
+GROUP BY pizza_category;
+
+
+SELECT pizza_size,SUM(total_price) * 100 / (SELECT SUM(total_price)) AS decimal (10,2) FROM pizza_sales AS pct
+FROM pizza_sales
+GROUP BY pizza_size
+ORDER By PCT desc;
+
+SELECT
+    pizza_size,
+    ROUND(SUM(total_price) * 100 / (SELECT SUM(total_price) FROM pizza_sales), 2) AS pct
+FROM
+    pizza_sales
+GROUP BY
+    pizza_size
+ORDER BY
+    pct DESC;
+ 
+SELECT Top 5 pizza_name, SUM(quantity) AS Total_Pizza_Sold
+FROM pizza_sales
+GROUP BY pizza_name
+ORDER BY Total_Pizza_Sold DESC;
+
+SELECT pizza_name, SUM(quantity) AS Total_Pizza_Sold
+FROM pizza_sales
+GROUP BY pizza_name
+ORDER BY Total_Pizza_Sold DESC
+LIMIT 5;
+
+SELECT from pizza_name limit=5, SUM(quantity) AS Total_Pizza_Sold
+FROM pizza_sales
+GROUP BY pizza_name
+ORDER BY Total_Pizza_Sold ASC;
+
+SELECT pizza_name, SUM(quantity) AS Total_Pizza_Sold
+FROM pizza_sales
+GROUP BY pizza_name
+ORDER BY Total_Pizza_Sold ASC
+LIMIT 5;
